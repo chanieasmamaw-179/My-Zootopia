@@ -6,28 +6,27 @@ API_KEY = 'VvdZk/eLNcUMI2W/Zp5sZg==txiiFyuEGIse97vq'  # Replace with your actual
 
 def api_animal_get_request(animal_name=''):
     """Makes an API request to get animal data."""
-    # Construct the URL for the API request
     if animal_name:
         url = f'https://api.api-ninjas.com/v1/animals?name={animal_name}'
     else:
         url = 'https://api.api-ninjas.com/v1/animals'
 
-    # Set up the headers with the API key
     headers = {
         'X-Api-Key': API_KEY
     }
 
-    # Send the GET request to the API with headers
     response = requests.get(url, headers=headers)
 
-    # Check if the request was successful
     if response.status_code != 200:
         print(f"Failed to retrieve data. HTTP Status code: {response.status_code}")
         print("Error details:", response.json())
         return None
 
-    # Parse the JSON response
-    return response.json()
+    data = response.json()
+    if animal_name and not data:  # Check if data is empty for a specific animal name
+        return {'error': f'The animal "{animal_name}" doesn\'t exist.'}
+
+    return data
 
 
 def load_data(file_path):
@@ -38,10 +37,10 @@ def load_data(file_path):
 
 def generate_animal_html(animal):
     """Generates HTML for an animal."""
-    name = animal['name']
-    diet = animal['characteristics'].get('diet', 'Unknown')
+    name = animal.get('name', 'Unknown')
+    diet = animal.get('characteristics', {}).get('diet', 'Unknown')
     location = ', '.join(animal.get('locations', []))
-    animal_type = animal['characteristics'].get('type', 'Unknown')
+    animal_type = animal.get('characteristics', {}).get('type', 'Unknown')
 
     html = f"""
     <li class="cards__item">
@@ -63,12 +62,16 @@ def main():
     # Fetch animal data from the API
     animals_data = api_animal_get_request(animal_name)
 
-    # If API data fetching failed, load data from the local file as a fallback
+    # If API data fetching failed or returned an error, load data from the local file as a fallback
     if animals_data is None:
         animals_data = load_data("animals_data.json")
-
-    # Generate the HTML for all animals
-    all_animals_html = "".join(generate_animal_html(animal) for animal in animals_data)
+        all_animals_html = "".join(generate_animal_html(animal) for animal in animals_data)
+    elif 'error' in animals_data:
+        error_message = animals_data['error']
+        all_animals_html = f'<h2>{error_message}</h2>'
+    else:
+        # Generate the HTML for all animals
+        all_animals_html = "".join(generate_animal_html(animal) for animal in animals_data)
 
     # HTML template with placeholder for animal information
     html_template = """
@@ -150,7 +153,7 @@ def main():
     </html>
     """
 
-    # Replace the placeholder with the generated HTML for all animals
+    # Replace the placeholder with the generated HTML for all animals or the error message
     html_content = html_template.replace("__REPLACE_ANIMALS_INFO__", all_animals_html)
 
     # Save the resulting HTML to a file
