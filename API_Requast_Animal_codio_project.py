@@ -1,5 +1,18 @@
-import json
+import os
+from dotenv import load_dotenv
 from data_fetcher import fetch_animal_data
+import json
+
+# Load environment variables from the .env file
+load_dotenv()
+
+# Retrieve the API key from environment variables
+api_key = os.getenv('API_KEY')
+
+print(f"API Key Retrieved: {api_key}")  # For debugging purposes; remove in production
+
+if not api_key:
+    print("API key is missing. Please check your .env file.")
 
 def load_data(file_path):
     """Loads a JSON file."""
