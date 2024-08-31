@@ -2,14 +2,13 @@ import requests
 import json
 
 API_KEY = 'VvdZk/eLNcUMI2W/Zp5sZg==txiiFyuEGIse97vq'  # Replace with your actual API key
-ANIMAL_NAME = 'Fox' # Keep empty to get all animals
 
 
-def api_animal_get_request():
+def api_animal_get_request(animal_name=''):
     """Makes an API request to get animal data."""
     # Construct the URL for the API request
-    if ANIMAL_NAME:
-        url = f'https://api.api-ninjas.com/v1/animals?name={ANIMAL_NAME}'
+    if animal_name:
+        url = f'https://api.api-ninjas.com/v1/animals?name={animal_name}'
     else:
         url = 'https://api.api-ninjas.com/v1/animals'
 
@@ -58,8 +57,11 @@ def generate_animal_html(animal):
 
 
 def main():
+    # Request animal name from user
+    animal_name = input("Enter the name of an animal (or leave blank to get all animals): ").strip()
+
     # Fetch animal data from the API
-    animals_data = api_animal_get_request()
+    animals_data = api_animal_get_request(animal_name)
 
     # If API data fetching failed, load data from the local file as a fallback
     if animals_data is None:
