@@ -1,5 +1,5 @@
 import json
-
+animals_web_generator.py
 
 def load_data(file_path):
     """Loads a JSON file."""
